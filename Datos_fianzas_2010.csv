@@ -1,21 +1,20 @@
-,,,
 2010,,,
-Ramos y Subramos,Indice de Reclamaciones pagadas esperadas (w),Indice de severidad promedio,Monto de reclamaciones pagadas esperadas
-Fidelidad,0.48600%,0.37270%," $12,062,351.00 "
-Individuales,0.65440%,0.45210%," $10,138,885.00 "
-Colectivo,0.34000%,0.26030%," $3,170,924.00 "
-Judiciales,0.10650%,0.06230%," $1,190,492.00 "
-Penales,0.73160%,0.47440%," $655,593.00 "
-No Penales,0.05490%,0.02880%," $561,736.00 "
+Ramos,Indice,Severidad,Reclamaciones
+Fidelidad,0.49%,0.37%,"$12,062,351.00"
+Individuales,0.65%,0.45%,"$10,138,885.00"
+Colectivo,0.34%,0.26%,"$3,170,924.00"
+Judiciales,0.11%,0.06%,"$1,190,492.00"
+Penales,0.73%,0.47%,"$655,593.00"
+No Penales,0.05%,0.03%,"$561,736.00"
 Que amparen a los conductores de behículos automotores,-,-, - 
-Administrativas,0.14030%,0.08200%," $117,698,144.00 "
-De Obra,0.07580%,0.04550%," $39,698,144.00 "
-De proveeduria,0.33910%,0.14670%," $87,785,184.00 "
-Fiscales,0.21060%,0.06920%," $6,772,757.00 "
-De arrendamiento,0.42170%,0.18230%," $1,403,827.00 "
-Otras Fianzas Administrativas,0.94020%,0.31180%," $19,038,667.00 "
-Crédito,1.17190%,0.62380%," $9,336,207.00 "
-De suministro,1.19850%,0.63790%," $9,023,880.00 "
-De compraventa,0.00650%,0.00130%," $2,843.00 "
+Administrativas,0.14%,0.08%,"$117,698,144.00"
+De Obra,0.08%,0.05%,"$39,698,144.00"
+De proveeduria,0.34%,0.15%,"$87,785,184.00"
+Fiscales,0.21%,0.07%,"$6,772,757.00"
+De arrendamiento,0.42%,0.18%,"$1,403,827.00"
+Otras Fianzas Administrativas,0.94%,0.31%,"$19,038,667.00"
+Crédito,1.17%,0.62%,"$9,336,207.00"
+De suministro,1.20%,0.64%,"$9,023,880.00"
+De compraventa,0.01%,0.00%,"$2,843.00"
 Financieras,-,-, - 
 Otras Fianzas de Credito,-,-,-
