@@ -4,7 +4,6 @@ import pdb
 import pandas as pd
 import datetime
 
-
 #DataFrame con datos maestros 
 file_2008=pd.read_csv("Datos_fianzas_2008.csv", encoding="iso-8859-1",skiprows=1)
 file_2009=pd.read_csv("Datos_fianzas_2009.csv", encoding="iso-8859-1",skiprows=1)
@@ -100,37 +99,30 @@ def intentos(pregunta,opcion1,opcino2):
     else:
         raise ValueError("Opción invalida, número de intentos excedidos")
     
-#función para cargar archivos
-def cargador_archivos_csv(archivos):  ##Checar que realmente funciona
-    datos= pd.DataFrame()
-    i=0
-    for ruta in archivos:
-        file=pd.read_csv(ruta, encoding="iso-8859-1",skip_blank_lines=True,skiprows=1)
-        file["año"]=año_inicial+i
-        datos=datos.merge()
-        i+=1
-    return datos
-
 ##Creación de funciónes auxiliares
 def calculos(Ind,Ma,gadmi =.1, gadmi_min= 1000 ,gadq=.15, gadq_min=1500, mutil=.1,mutil_min=1000):
     Prima_Base = Ind*Ma
     m_gadmin=0
     m_gadq =0
     m_uti=0
+    #pdb.set_trace()
     #Checar porque no esta tomando los montos minimos
     if gadmi*Prima_Base > gadmi_min:
         m_gadmin= gadmi*Prima_Base
     else:
         m_gadmi = gadmi_min
-    if m_gadq*Prima_Base > gadq_min:
-        m_gadq= m_gadq*Prima_Base
+    if gadq*Prima_Base > gadq_min:
+        m_gadq= gadq*Prima_Base
     else:
         m_gadq=gadq_min
-    if m_uti*Prima_Base > mutil_min:
+    if mutil*Prima_Base > mutil_min:
+        m_uti=mutil*Prima_Base
+    else:
         m_uti=mutil_min
     Prima_Tarifa = Prima_Base + m_gadmin + m_gadq + m_uti
     return Prima_Tarifa
 
+#Función que calcula el promedio de una lista
 def prom_lista(ls):
     if type(ls)!= "list":
         raise ValueError("Esta función solo está definida para listas")
@@ -139,14 +131,37 @@ def prom_lista(ls):
     mean=suma/n
     return mean
 
+#Función que verifica la ortografía de los ramos escritos
 def verificar(ramos):
     for ramo in ramos:
         for ramo_fin in ramos_final:
-            if ramo.lower() ==ramo_fin.lower():
+            ramo_prueba=ramo_fin.lower()
+            if ramo.lower() ==ramo_prueba:
                 ramos.remove(ramo)
                 ramos.append(ramo_fin)
     return ramos
 
+#Función que cambia como estan escritos los ramos para que coincidan totalmente con los indices del DataFrame
+def corrección(ramos):
+    iniciales=["fide","indi","cole","judi", "pena","no p","que ","admi","de o","de p","fisc","de a","cred","de s","de c","fina","otra"]
+    ramos_prev=[]
+    while len(ramos)>0:
+        for ramo in ramos:
+            for ini in iniciales:
+                if ramo[0:4].lower()== ini:
+                    ramos.remove(ramo)
+                    ramos_prev.append(ini)
+            if ramo in ramos:
+                ramos.remove(ramo)
+    for i in range(len(iniciales)):
+        for ramo in range(len(ramos_prev)):
+            if iniciales[i] in ramos_prev:
+                ramos_prev.remove(iniciales[i])
+                ramos_prev.append(ramos_final[i])
+    ramos=ramos_prev
+    return ramos
+
+#Función en la cual se piden todos los inputs que se necesitas para calcular la Prima
 def inputs():
     acc=0
     tipo_usuario=0
@@ -173,12 +188,11 @@ def inputs():
     mutil=0
     mutil_min=0
     valores_prima=0
+    guardar=0
+    ruta_archivo=0
 
     tipo_usuario=intentos("Usuario final(U) o prestador de servicio(S)?","U","S")
-    if tipo_usuario =="U":
-        acc="C"
-    elif tipo_usuario =="S":
-        acc= intentos("Desea realizar una Nota tecnica(N) u obtener los cálculos(C)?","N","C")
+    if tipo_usuario =="S":
         datos_nuevos=intentos("Desea introducir nuevos datos(N) o trabajar con los actuales(A)?","N","A")
     unica = intentos("Su poliza es para un solo ramo(S) o un podructo mixto(M)","S","M")
     if unica == "S":
@@ -192,10 +206,10 @@ def inputs():
                 check=True
     elif unica =="M":
         i=0
-        n_ramos= int(input("Cuantos ramos tiene su poliza?"))
+        n_ramos= int(input("Cuantos ramos tiene su poliza? "))
         for ramo in range(n_ramos):
             i+=1
-            ramos.append(input(f"Cuales es el ramo {i}"))
+            ramos.append(input(f"Cuales es el ramo {i} "))
     MA=int(input("Cual es el monto afianzado?"))
     if datos_nuevos=="N":
         print("Los archivos a cargar deben de estar en formato csv")
@@ -209,10 +223,10 @@ def inputs():
                 if método_de_estimación =="I":
                     incremento= input("Desea conservar la tendencia del incremento en los datos(C) o introducir un incremento(I)?").upper()
                     if incremento == "I":
-                        porcentaje=float(input("introduzca incremento en porcentaje"))
+                        porcentaje=float(input("introduzca incremento en porcentaje(solo el número)"))
                         tasa=porcentaje/100
                 if método_de_estimación =="A":
-                    tasa =float(input("A qué tasa desea que incrementen sus indicadores?"))
+                    tasa =float(input("A qué tasa desea que incrementen sus indicadores(solo números)?"))
         años = año_final_datos-año_inicial
         for año in range(años+1):
             i=0
@@ -224,7 +238,7 @@ def inputs():
             estimar=intentos("Se tienen datos del 2008 al 2014, desea estimar los datos para los años futuros faltantes?(S/N)","S","N")
             if estimar=="S":
                 método_de_estimación= input("Mediante que metodo desea estimar los datos, estandar(E), Incremento lineal(L)o Incremento algebracico(A) ?").upper() 
-                if método_de_estimación =="I":
+                if método_de_estimación =="L":
                     incremento= input("Desea conservar la tendencia del incremento en los datos(C) o introducir un incremento(I)?").upper()
                     if incremento == "I":
                         porcentaje=float(input("introduzca incremento en porcentaje"))
@@ -234,68 +248,81 @@ def inputs():
     if tipo_usuario=="S":
         valores_prima=intentos("Desea usar los valores estandar para el calculo de la prima(E) o usar distintos(D)?","E","D")
         if valores_prima=="D":
-            gadmin=float(input("Introdusca el porcentaje correspondiente a gastos de administración"))
-            gadmin_min=float(input("Introdusca monto minimo correspondiente a gastos de administración"))
-            gadq=float(input("Introdusca el porcentaje correspondiente a gastos de adquisición"))
-            gadq_min=float(input("Introdusca el monto minimo correspondiente a gastos de adquisición"))
-            mutil=float(input("Introdusca el porcentaje correspondiente a utilidades"))
-            mutil_min=float(input("Introdusca el monto minimo correspondiente a utilidades"))
-    if acc=="N":
-        #descripcion() función que pida los elementos de una nota tecnica
-        pass
-    ramos=verificar(ramos) #Corregir por el uso de mayusculas y minúsculas en los ramos
-    diccionario={"acc":acc, "tipo_usuario": tipo_usuario, "datos_nuevos":datos_nuevos,"ramos": ramos, "MA":MA, 
+            gadmin=float(input("Introdusca el porcentaje correspondiente a gastos de administración (solo números en decimales)"))
+            gadmin_min=float(input("Introdusca monto minimo correspondiente a gastos de administración "))
+            gadq=float(input("Introdusca el porcentaje correspondiente a gastos de adquisición (solo números en decimales)"))
+            gadq_min=float(input("Introdusca el monto minimo correspondiente a gastos de adquisición "))
+            mutil=float(input("Introdusca el porcentaje correspondiente a utilidades (solo números en decimales)"))
+            mutil_min=float(input("Introdusca el monto minimo correspondiente a utilidades "))
+    ramos=corrección(ramos)
+    diccionario={"tipo_usuario": tipo_usuario, "datos_nuevos":datos_nuevos,"ramos": ramos, "MA":MA, 
                  "año_inicial": año_inicial,"año_final": año_final, "año_final_datos" :año_final_datos,
                  "diferencia":diferencia,"archivos" :archivos, "estimar":estimar,"método_de_estimación":método_de_estimación,
                  "incremento":incremento,"tasa":tasa, "valores_prima":valores_prima,"gadmin":gadmin,"gadmin_min":gadmin_min,
                  "gadq":gadq,"gadq_min":gadq_min,"mutil":mutil,"mutil_min":mutil_min} 
     return diccionario
 
-def Nota_tec():
+##Función principal que calcula la priba basado en los inputs dados
+
+def Prima_fianzas():
+    """
+    Calcula una prima de tarifa para una fianza, dando la opción de meter todos los parámetros
+    e inclusó los archivos estadisticos.
+
+    Parameters
+    ----------
+    No usa ningún parametro pues todos los pide al usuario
+
+    Returns
+    -------
+    Regresa la prima de tarifa de la fianza especificada
+    """
+    
     variables=inputs()
     datos=datos_maestros
+    indices_usuario=[]
+    indice=0
     if variables["tipo_usuario"]=="U":
-        indices_usuario=[]
-        for ramo in variables["ramos"]:
-            indices_usuario.apend(datos.loc[variables["ramos"][ramo]].mean())
-        indice=prom_lista(indices_usuario)
+        for i in range(len(variables["ramos"])):
+            indices_usuario.append(datos.loc[variables["ramos"][i]].mean())
+        indice=sum(indices_usuario)
         Prima=calculos(indice,variables["MA"])
         porcentaje= Prima/variables["MA"]
-        return (f"Su prima es de ${Prima}, lo que representa un {porcentaje}% de su monto afianzado")
+        return (f"Su prima es de ${Prima}, lo que representa un {porcentaje}% de su monto afianzado"), Prima
     if variables["tipo_usuario"]=="S":
         if variables["datos_nuevos"]=="N":
             cargador_archivos_csv(variables["archivos"])
     ramos=variables["ramos"]
     if variables["estimar"]=="N":
-        for ramo in variables["ramos"]:
-            indices_usuario.apend(datos.loc[variables["ramos"][ramo]].mean())
+        for i in range(len(variables["ramos"])):
+            indices_usuario.append(datos.loc[variables["ramos"][i]].mean())
         indice=sum(indices_usuario)    
     if variables["estimar"]=="S":
         if variables["método_de_estimación"]=="E":
             indices_usuario=[]
             desviaciones=[]
-            for ramo in variables["ramos"]:
-                indices_usuario.apend(datos.loc[variables["ramos"][ramo]].mean())
-                desviaciones.apend(datos.loc[variables["ramos"][ramo]].std())
+            for i in range(len(variables["ramos"])):
+                indices_usuario.append(datos.loc[variables["ramos"][i]].mean())
+                desviaciones.append(datos.loc[variables["ramos"][i]].std())
             indice=sum(indices_usuario)+2*sum(desviaciones)  ##datos estimados
-        elif variables["método_de_estimación"]=="I":
+        elif variables["método_de_estimación"]=="L":
             if variables["incremento"]=="C":
                 indices_usuario=[]
                 tasa=(((datos.loc["Fidelidad","2014"]-datos.loc["Fidelidad","2008"])/5)/datos.loc["Fidelidad","2008"])
-                for ramo in variables["ramos"]:
-                    indices_usuario.apend(datos.loc[variables["ramos"][ramo]].mean())
+                for i in range(len(variables["ramos"])):
+                    indices_usuario.append(datos.loc[variables["ramos"][i]].mean())
                 indice=sum(indices_usuario)*((1+tasa)**variables["diferencia"])
             else:
                 tasa=variables["tasa"]
                 indices_usuario=[]
-                for ramo in variables["ramos"]:
-                    indices_usuario.apend(datos.loc[variables["ramos"][ramo]].mean())
+                for i in range(len(variables["ramos"])):
+                    indices_usuario.append(datos.loc[variables["ramos"][i]].mean())
                 indice=sum(indices_usuario)*((1+tasa)**variables["diferencia"])
         elif variables["método_de_estimación"]=="A":
             tasa=variables["tasa"]
             indices_usuario=[]
-            for ramo in variables["ramos"]:
-                indices_usuario.apend(datos.loc[variables["ramos"][ramo]].mean())
+            for i in range(len(variables["ramos"])):
+                indices_usuario.append(datos.loc[variables["ramos"][i]].mean())
             indice=sum(indices_usuario)*(tasa*variables["diferencia"])
     
     if variables["valores_prima"]=="E":
@@ -303,29 +330,9 @@ def Nota_tec():
         porcentaje=Prima/variables["MA"]
         
     elif variables["valores_prima"]=="D":
-        Prima=calculos(indicce,variables["MA"],variables["gadmin"],variables["gadmin_min"],variables["gadq"],variables["gadq_min"],variables["mutil"],variables["mutil_min"])
+        Prima=calculos(indice,variables["MA"],variables["gadmin"],variables["gadmin_min"],variables["gadq"],variables["gadq_min"],variables["mutil"],variables["mutil_min"])
         porcentaje=Prima/variables["MA"]
-    if variables["acc"]=="C":
-        return (f"Su prima es de ${Prima}, lo que representa un {porcentaje} % de su monto afianzado")
-    elif variables["acc"]=="N":
-        #regresar archivo de nota tecnica
-        return("cosas nota tecnica")
+        
+    return (f"Su prima es de ${Prima}, lo que representa un {porcentaje} % de su monto afianzado"), Prima
                 
-def calculos(Ind,Ma,gadmi =.1, gadmi_min= 1000 ,gadq=.15, gadq_min=1500, mutil=.1,mutil_min=1000):
-    Prima_Base = Ind*Ma
-    m_gadmin=0
-    m_gadq =0
-    m_uti=0
-    #Checar porque no esta tomando los montos minimos
-    if gadmi*Prima_Base > gadmi_min:
-        m_gadmin= gadmi*Prima_Base
-    else:
-        m_gadmi = gadmi_min
-    if m_gadq*Prima_Base > gadq_min:
-        m_gadq= m_gadq*Prima_Base
-    else:
-        m_gadq=gadq_min
-    if m_uti*Prima_Base > mutil_min:
-        m_uti=mutil_min
-    Prima_Tarifa = Prima_Base + m_gadmin + m_gadq + m_uti
-    return Prima_Tarifa
+
